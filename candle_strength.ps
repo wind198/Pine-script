@@ -1,0 +1,46 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © cerato236
+
+//@version=5
+indicator(" Candle_Strength")
+
+var bullColor=input(color.white,'Bush candle color')
+var bearColor=input(color.black,'Bush candle color')
+
+CS_STABILITY_THRESHOLD=0.2
+CS_AGUMENTATION_FACTOR_FOR_STABILITY=1.1
+
+ABS_CS_AVERAGE_PERIOD=200
+ABS_CS_MAX=20
+ABS_CS_MAX_WEIGHTING_FACTOR=1.1
+
+body=close-open
+upperSd=high-math.max(close,open)
+lowerSd=math.min(close,open)-low
+
+MAJOR_SD_CONTRIBUTION_FACTOR=math.abs(body)<math.max(upperSd,lowerSd)*0.6?0.7:0
+MINOR_SD_CONTRIBUTION_FACTOR=math.abs(body)<math.max(upperSd,lowerSd)*0.6?0.1:0
+
+
+cs=body
+if(cs[1]>0)
+    cs:=cs+lowerSd*MINOR_SD_CONTRIBUTION_FACTOR-upperSd*MAJOR_SD_CONTRIBUTION_FACTOR
+if(cs[1]<0)
+    cs:=cs+lowerSd*MAJOR_SD_CONTRIBUTION_FACTOR-upperSd*MINOR_SD_CONTRIBUTION_FACTOR
+
+if(cs*cs[1]>0)
+    if(math.abs(cs)>math.abs(cs[1])*(1-CS_STABILITY_THRESHOLD) and math.abs(cs)<math.abs(cs[1])*(1+CS_STABILITY_THRESHOLD))
+        cs:=cs*CS_AGUMENTATION_FACTOR_FOR_STABILITY
+        
+
+plot(cs,'Candle strength',style=plot.style_columns,color=color.new(cs>0?bullColor:bearColor,1))
+plot(ta.ema(cs,9),color=color.blue,linewidth=2,style=plot.style_line)
+
+absCs=math.abs(cs)
+avgAbsCs=ta.sma(absCs,ABS_CS_AVERAGE_PERIOD)
+maxAbsCs=ta.highest(absCs,ABS_CS_MAX)
+keyCandleThresholdValue=avgAbsCs+maxAbsCs*ABS_CS_MAX_WEIGHTING_FACTOR
+if(cs>0 and absCs>keyCandleThresholdValue)
+    alert('Key bulish candle appear')
+if(cs<0 and absCs>keyCandleThresholdValue)
+    alert('Key bearish candle appear')

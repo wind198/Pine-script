@@ -1,0 +1,19 @@
+
+var float RISK_IN_DOLAR_PER_TRADE=input(15,'Risk in dolar per trade')
+var float STOP_LOSS_IN_TICK=input(10000,'Stop loss in ticks')
+var float PIP_VALUE_PER_LOT=100000
+var ASSET_NAME=syminfo.ticker
+if(str.lower(ASSET_NAME) == 'xauusd')
+    PIP_VALUE_PER_LOT:=1
+else if(str.lower(ASSET_NAME) == 'eurusd')
+    PIP_VALUE_PER_LOT:=10
+else if(str.lower(ASSET_NAME) == 'gbpjpy')
+    PIP_VALUE_PER_LOT:=8.75
+else if(str.lower(ASSET_NAME) == 'us30usd')
+    PIP_VALUE_PER_LOT:=1    
+ 
+var LOT_SIZE_PER_TRADE=RISK_IN_DOLAR_PER_TRADE/((STOP_LOSS_IN_TICK/10)*PIP_VALUE_PER_LOT)
+if(LOT_SIZE_PER_TRADE<0.01)
+    LOT_SIZE_PER_TRADE:=0.01
+    
+label.new(bar_index,high,str.tostring(LOT_SIZE_PER_TRADE))
